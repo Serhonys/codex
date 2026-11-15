@@ -1,0 +1,146 @@
+<div id="ukrposhta-fields" class="ukrposhta-fields" style="display:none; margin:15px 0; padding:12px; border:1px solid #ddd; background:#fafafa;">
+  <div class="form-group">
+    <label for="ukrposhta-city">{{ text_city }}</label>
+    <input type="text" id="ukrposhta-city" class="form-control" placeholder="{{ text_select_city }}" value="{{ ukrposhta.city_name|default('') }}" autocomplete="off"/>
+    <input type="hidden" id="ukrposhta-city-id" value="{{ ukrposhta.city_id|default('') }}"/>
+    <input type="hidden" id="ukrposhta-region-name" value="{{ ukrposhta.region_name|default('') }}"/>
+    <div id="ukrposhta-city-suggest" class="list-group" style="position:relative; z-index:20; display:none;"></div>
+  </div>
+
+  <div class="form-group" id="ukrposhta-office-wrap">
+    <label for="ukrposhta-office">{{ text_office }}</label>
+    <select id="ukrposhta-office" class="form-control">
+      <option value="">{{ text_select_office }}</option>
+    </select>
+  </div>
+
+  <div id="ukrposhta-address-wrap" style="display:none;">
+    <div class="form-group">
+      <label for="ukrposhta-postcode">{{ text_postcode }}</label>
+      <input type="text" id="ukrposhta-postcode" class="form-control" value="{{ ukrposhta.postcode|default('') }}"/>
+    </div>
+    <div class="form-group">
+      <label for="ukrposhta-street">{{ text_street }}</label>
+      <input type="text" id="ukrposhta-street" class="form-control" value="{{ ukrposhta.street|default('') }}"/>
+    </div>
+    <div class="form-group">
+      <label for="ukrposhta-house">{{ text_house }}</label>
+      <input type="text" id="ukrposhta-house" class="form-control" value="{{ ukrposhta.house|default('') }}"/>
+    </div>
+    <div class="form-group">
+      <label for="ukrposhta-apartment">{{ text_apartment }}</label>
+      <input type="text" id="ukrposhta-apartment" class="form-control" value="{{ ukrposhta.apartment|default('') }}"/>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+(function() {
+  var citiesUrl = '{{ cities_url|e('js') }}';
+  var officesUrl = '{{ offices_url|e('js') }}';
+  var saveUrl = '{{ save_url|e('js') }}';
+  var cityTimer = null;
+  var selectedOffice = {{ ukrposhta.office_id|default('')|json_encode|raw }};
+
+  function isUkrposhtaSelected() {
+    var code = $('input[name="shipping_method"]:checked').val() || '';
+    return code.indexOf('ukrposhta.') === 0;
+  }
+
+  function isDoorDelivery() {
+    var code = $('input[name="shipping_method"]:checked').val() || '';
+    return code.indexOf('_w2d') !== -1;
+  }
+
+  function toggleFields() {
+    if (isUkrposhtaSelected()) {
+      $('#ukrposhta-fields').show();
+      if (isDoorDelivery()) {
+        $('#ukrposhta-office-wrap').hide();
+        $('#ukrposhta-address-wrap').show();
+      } else {
+        $('#ukrposhta-office-wrap').show();
+        $('#ukrposhta-address-wrap').hide();
+      }
+      saveSelection();
+    } else {
+      $('#ukrposhta-fields').hide();
+    }
+  }
+
+  function saveSelection() {
+    if (!isUkrposhtaSelected()) return;
+    var officeOpt = $('#ukrposhta-office option:selected');
+    var payload = {
+      method_code: $('input[name="shipping_method"]:checked').val() || '',
+      city_id: $('#ukrposhta-city-id').val(),
+      city_name: $('#ukrposhta-city').val(),
+      region_name: $('#ukrposhta-region-name').val(),
+      postcode: isDoorDelivery() ? $('#ukrposhta-postcode').val() : (officeOpt.data('postcode') || ''),
+      office_id: officeOpt.val() || '',
+      office_name: officeOpt.data('name') || officeOpt.text(),
+      street: $('#ukrposhta-street').val(),
+      house: $('#ukrposhta-house').val(),
+      apartment: $('#ukrposhta-apartment').val()
+    };
+    $.post(saveUrl, payload);
+  }
+
+  function loadOffices(cityId) {
+    if (!cityId) return;
+    $.getJSON(officesUrl, { city_id: cityId }, function(rows) {
+      var $sel = $('#ukrposhta-office').empty().append('<option value="">{{ text_select_office|e('js') }}</option>');
+      (rows || []).forEach(function(row) {
+        var opt = $('<option></option>')
+          .val(row.office_id)
+          .text(row.label)
+          .attr('data-postcode', row.postcode)
+          .attr('data-name', row.name);
+        if (selectedOffice && String(selectedOffice) === String(row.office_id)) {
+          opt.prop('selected', true);
+        }
+        $sel.append(opt);
+      });
+      saveSelection();
+    });
+  }
+
+  $(document).on('change', 'input[name="shipping_method"]', toggleFields);
+
+  $('#ukrposhta-city').on('input', function() {
+    var term = $(this).val();
+    clearTimeout(cityTimer);
+    if (term.length < 2) {
+      $('#ukrposhta-city-suggest').hide().empty();
+      return;
+    }
+    cityTimer = setTimeout(function() {
+      $.getJSON(citiesUrl, { term: term }, function(rows) {
+        var $box = $('#ukrposhta-city-suggest').empty();
+        (rows || []).slice(0, 15).forEach(function(row) {
+          var a = $('<a href="#" class="list-group-item"></a>').text(row.label).data(row);
+          $box.append(a);
+        });
+        $box.toggle(!!(rows && rows.length));
+      });
+    }, 300);
+  });
+
+  $('#ukrposhta-city-suggest').on('click', 'a', function(e) {
+    e.preventDefault();
+    var row = $(this).data();
+    $('#ukrposhta-city').val(row.city_name);
+    $('#ukrposhta-city-id').val(row.city_id);
+    $('#ukrposhta-region-name').val(row.region_name);
+    $('#ukrposhta-city-suggest').hide().empty();
+    loadOffices(row.city_id);
+  });
+
+  $('#ukrposhta-office, #ukrposhta-postcode, #ukrposhta-street, #ukrposhta-house, #ukrposhta-apartment').on('change input', saveSelection);
+
+  {% if ukrposhta.city_id %}
+  loadOffices('{{ ukrposhta.city_id|e('js') }}');
+  {% endif %}
+
+  toggleFields();
+})();
+//--></script>

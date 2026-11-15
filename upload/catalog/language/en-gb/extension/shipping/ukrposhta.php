@@ -1,0 +1,15 @@
+<?php
+$_['text_title']           = 'Ukrposhta';
+$_['text_express_w2w']     = 'Ukrposhta Express — post office';
+$_['text_express_w2d']     = 'Ukrposhta Express — courier';
+$_['text_standard_w2w']    = 'Ukrposhta Standard — post office';
+$_['text_standard_w2d']    = 'Ukrposhta Standard — courier';
+$_['text_free']            = 'free';
+$_['text_city']            = 'City';
+$_['text_office']          = 'Post office';
+$_['text_postcode']        = 'Postcode';
+$_['text_street']          = 'Street';
+$_['text_house']           = 'House';
+$_['text_apartment']       = 'Apartment';
+$_['text_select_city']     = 'Start typing city name';
+$_['text_select_office']   = 'Select post office';
