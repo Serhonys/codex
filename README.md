@@ -17,19 +17,21 @@
 - Sandbox (`dev.ukrposhta.ua`) і production
 - Мови: `uk-ua` / `ua-ua`, `ru-ru`, `en-gb` (+ english/russian/ukrainian для OC 2.3)
 
+## Скачати
+
+- [`dist/ukrposhta-api.ocmod.zip`](dist/ukrposhta-api.ocmod.zip) — для інсталера OcStore/OpenCart (у корені zip: `upload/` + `install.xml`)
+
 ## Встановлення (OcStore / OpenCart 3.x)
 
-1. Скопіюйте вміст `upload/` у корінь магазину (через FTP або файловий менеджер).
-2. У адмінці: **Доповнення → Встановлення доповнень** — завантажте `install.xml` (OCMOD).
-3. **Доповнення → Менеджер доповнень → Оновити** (синя кнопка).
-4. **Доповнення → Доставка → Укрпошта API → Встановити → Редагувати**.
-5. Заповніть токени з договору Укрпошти:
-   - Bearer eCom
-   - Bearer StatusTracking
-   - User / Counterparty token
-   - UUID відправника (клієнт-відправник у eCom)
-   - Індекс відправника
-6. Увімкніть потрібні способи доставки та збережіть.
+1. Адмін → **Доповнення → Встановлення доповнень** → завантажити `ukrposhta-api.ocmod.zip`.
+2. **Менеджер доповнень → Оновити**.
+3. **Доповнення → Доставка** → **Укрпошта API** → **Встановити (+)** → **Редагувати**.
+4. Заповніть токени (Bearer eCom, StatusTracking, User token, UUID відправника, індекс) і збережіть.
+
+Якщо модуля немає в списку доставок — файли не потрапили в корінь. Має існувати:
+`admin/controller/extension/shipping/ukrposhta.php`
+
+Детальніше: [`docs/INSTALL_UA.md`](docs/INSTALL_UA.md)
 
 ## Структура
 

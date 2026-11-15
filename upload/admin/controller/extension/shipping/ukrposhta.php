@@ -155,7 +155,7 @@ class ControllerExtensionShippingUkrposhta extends Controller {
 
 		$this->load->model('setting/setting');
 		$this->model_setting_setting->editSetting('shipping_ukrposhta', array(
-			'shipping_ukrposhta_status' => 0,
+			'shipping_ukrposhta_status' => 1,
 			'shipping_ukrposhta_sort_order' => 1,
 			'shipping_ukrposhta_api_calc' => 1,
 			'shipping_ukrposhta_fallback_cost' => 50,
